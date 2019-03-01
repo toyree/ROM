@@ -102,10 +102,43 @@ if(!is_null($events)){
             case 'text':
                 $userMessage = strtolower($userMessage); // แปลงเป็นตัวเล็ก สำหรับทดสอบ
                 switch ($userMessage) {
-                    case "t":
+                  case "t":
                         $textReplyMessage = "Bot ตอบกลับคุณเป็นข้อความ";
                         $replyData = new TextMessageBuilder($textReplyMessage);
                         break;
+                  
+                  case "p":
+                        // เรียกดูข้อมูลโพรไฟล์ของ Line user โดยส่งค่า userID ของผู้ใช้ LINE ไปดึงข้อมูล
+                        $response = $bot->getProfile($userID);
+                        if ($response->isSucceeded()) {
+                            // ดึงค่ามาแบบเป็น JSON String โดยใช้คำสั่ง getRawBody() กรณีเป้นข้อความ text
+                            $textReplyMessage = $response->getRawBody(); // return string            
+                            $replyData = new TextMessageBuilder($textReplyMessage);         
+                            break;              
+                        }
+                        // กรณีไม่สามารถดึงข้อมูลได้ ให้แสดงสถานะ และข้อมูลแจ้ง ถ้าไม่ต้องการแจ้งก็ปิดส่วนนี้ไปก็ได้
+                        $failMessage = json_encode($response->getHTTPStatus() . ' ' . $response->getRawBody());
+                        $replyData = new TextMessageBuilder($failMessage);
+                        break;              
+                    case "สวัสดี":
+                        // เรียกดูข้อมูลโพรไฟล์ของ Line user โดยส่งค่า userID ของผู้ใช้ LINE ไปดึงข้อมูล
+                        $response = $bot->getProfile($userID);
+                        if ($response->isSucceeded()) {
+                            // ดึงค่าโดยแปลจาก JSON String .ให้อยู่ใรูปแบบโครงสร้าง ตัวแปร array 
+                            $userData = $response->getJSONDecodedBody(); // return array     
+                            // $userData['userId']
+                            // $userData['displayName']
+                            // $userData['pictureUrl']
+                            // $userData['statusMessage']
+                            $textReplyMessage = 'สวัสดีครับ คุณ '.$userData['displayName'];             
+                            $replyData = new TextMessageBuilder($textReplyMessage);         
+                            break;              
+                        }
+                        // กรณีไม่สามารถดึงข้อมูลได้ ให้แสดงสถานะ และข้อมูลแจ้ง ถ้าไม่ต้องการแจ้งก็ปิดส่วนนี้ไปก็ได้
+                        $failMessage = json_encode($response->getHTTPStatus() . ' ' . $response->getRawBody());
+                        $replyData = new TextMessageBuilder($failMessage);
+                        break;
+                    
                     case "i":
                         $picFullSize = 'https://www.mywebsite.com/imgsrc/photos/f/simpleflower';
                         $picThumbnail = 'https://www.mywebsite.com/imgsrc/photos/f/simpleflower/240';
